@@ -43,11 +43,10 @@
   .topbar-btn { padding: 7px 13px; background: transparent; border: 1px solid #D6D4CC; border-radius: 3px; color: #6B6A60; font-size: 12px; cursor: pointer; transition: color 0.15s, border-color 0.15s; }
   .topbar-btn:hover { color: #0F1412; border-color: #0F1412; }
 
-  /* Brand mark — snow peak (＊ + wordmark, derived from official title pattern). */
+  /* Brand mark — snow peak official logo (Wikimedia Commons SVG). */
   .topbar-left { display: flex; align-items: center; gap: 18px; min-width: 0; }
-  .brand { display: flex; align-items: baseline; gap: 7px; flex-shrink: 0; }
-  .brand-mark { font-size: 22px; color: #0F1412; line-height: 1; font-weight: 400; }
-  .brand-wordmark { font-size: 14px; color: #0F1412; font-weight: 500; letter-spacing: 0.05em; }
+  .brand { display: flex; align-items: center; flex-shrink: 0; }
+  .brand-logo { height: 22px; width: auto; display: block; }
   .topbar-divider { width: 1px; height: 26px; background: #E8E4DB; flex-shrink: 0; }
 
   /* Methodology footer — non-engineer-facing, screenshot-friendly. */
@@ -122,8 +121,7 @@
   <div class="topbar">
     <div class="topbar-left">
       <div class="brand">
-        <span class="brand-mark">＊</span>
-        <span class="brand-wordmark">snow peak</span>
+        <img src="./assets/snowpeak-logo.svg" alt="snow peak" class="brand-logo">
       </div>
       <div class="topbar-divider"></div>
       <div>
@@ -191,8 +189,8 @@
     <div class="footer">
       <div class="footer-title">데이터 산정 방식</div>
       <p><strong>Requests</strong> · AWS CloudFront(글로벌 CDN)에서 자동 집계한 일별 호출 수입니다.</p>
-      <p><strong>Users</strong> · 추정치입니다. 사용자 1명이 한 번 접속할 때 발생시키는 평균 호출 수(약 55~75)를 기준으로 산정하며, Site Explorer는 사이트·시설 자원, Site Configurator는 PlayCanvas 런타임·기어 모델 호출의 합산 평균이 베이스라인입니다.</p>
-      <p class="footer-note">매일 09:00 KST에 자동 갱신됩니다.</p>
+      <p><strong>Users</strong> · 추정치입니다. 사용자 1명이 한 번 접속할 때 발생시키는 평균 호출 수를 기준으로, Site Explorer는 사이트·시설 자원, Site Configurator는 화면 동작 자원과 텐트·기어 모델 호출을 합산해 산정합니다.</p>
+      <p class="footer-note">매일 자동으로 갱신됩니다.</p>
     </div>
   </div>
 </div>
