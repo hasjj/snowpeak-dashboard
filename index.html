@@ -43,6 +43,21 @@
   .topbar-btn { padding: 7px 13px; background: transparent; border: 1px solid #D6D4CC; border-radius: 3px; color: #6B6A60; font-size: 12px; cursor: pointer; transition: color 0.15s, border-color 0.15s; }
   .topbar-btn:hover { color: #0F1412; border-color: #0F1412; }
 
+  /* Brand mark — snow peak (＊ + wordmark, derived from official title pattern). */
+  .topbar-left { display: flex; align-items: center; gap: 18px; min-width: 0; }
+  .brand { display: flex; align-items: baseline; gap: 7px; flex-shrink: 0; }
+  .brand-mark { font-size: 22px; color: #0F1412; line-height: 1; font-weight: 400; }
+  .brand-wordmark { font-size: 14px; color: #0F1412; font-weight: 500; letter-spacing: 0.05em; }
+  .topbar-divider { width: 1px; height: 26px; background: #E8E4DB; flex-shrink: 0; }
+
+  /* Methodology footer — non-engineer-facing, screenshot-friendly. */
+  .footer { margin-top: 32px; padding: 20px 22px; background: #FAFAF7; border: 1px solid #E8E4DB; border-radius: 4px; font-size: 12px; color: #6B6A60; line-height: 1.65; }
+  .footer-title { margin: 0 0 10px; font-size: 11px; color: #0F1412; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+  .footer p { margin: 0 0 6px; }
+  .footer p:last-child { margin: 0; }
+  .footer strong { color: #0F1412; font-weight: 600; }
+  .footer-note { margin-top: 10px !important; font-style: italic; color: #8B8A80; }
+
   .container { max-width: 1280px; margin: 0 auto; padding: 24px 32px 60px; }
   .meta-bar { display: flex; flex-wrap: wrap; gap: 22px; padding: 14px 18px; margin-bottom: 22px; background: #FAFAF7; border: 1px solid #E8E4DB; border-radius: 4px; font-size: 13px; }
   .meta-bar .key { color: #6B6A60; }
@@ -74,7 +89,7 @@
     html, body { background: #FFFFFF !important; }
     .topbar { border-bottom: 1px solid #0F1412; }
     .topbar-btn, .csv-btn { display: none; }
-    .kpi-card, .chart-card { break-inside: avoid; }
+    .kpi-card, .chart-card, .footer { break-inside: avoid; }
     .container { padding: 16px 24px 24px; }
   }
 
@@ -105,9 +120,16 @@
 <!-- DASHBOARD -->
 <div id="dashboard">
   <div class="topbar">
-    <div>
-      <div class="topbar-title">Snowpeak Site Explorer & Configurator</div>
-      <div class="topbar-meta" id="topbar-meta">Loading…</div>
+    <div class="topbar-left">
+      <div class="brand">
+        <span class="brand-mark">＊</span>
+        <span class="brand-wordmark">snow peak</span>
+      </div>
+      <div class="topbar-divider"></div>
+      <div>
+        <div class="topbar-title">Site Explorer & Configurator</div>
+        <div class="topbar-meta" id="topbar-meta">Loading…</div>
+      </div>
     </div>
     <button class="topbar-btn" onclick="signOut()">Sign out</button>
   </div>
@@ -165,6 +187,13 @@
 
     <div class="loading" id="loading">데이터 로드 중…</div>
     <div class="error-msg" id="error-msg" style="display:none"></div>
+
+    <div class="footer">
+      <div class="footer-title">데이터 산정 방식</div>
+      <p><strong>Requests</strong> · AWS CloudFront(글로벌 CDN)에서 자동 집계한 일별 호출 수입니다.</p>
+      <p><strong>Users</strong> · 추정치입니다. 사용자 1명이 한 번 접속할 때 발생시키는 평균 호출 수(약 55~75)를 기준으로 산정하며, Site Explorer는 사이트·시설 자원, Site Configurator는 PlayCanvas 런타임·기어 모델 호출의 합산 평균이 베이스라인입니다.</p>
+      <p class="footer-note">매일 09:00 KST에 자동 갱신됩니다.</p>
+    </div>
   </div>
 </div>
 
