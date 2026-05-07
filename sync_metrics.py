@@ -25,6 +25,12 @@ PERIOD_SECONDS = 86400    # daily
 OUTPUT_PATH = "data/cloudfront_metrics.csv"
 REGION = "us-east-1"      # CloudFront global metrics region
 
+# CloudWatch standard metrics에 unique users가 없어 추정치를 사용한다.
+# 추정 모델: users = round(requests / REQUESTS_PER_USER)
+# REQUESTS_PER_USER는 3D 인터랙티브 콘텐츠 운영의 1 세션당 평균 request 추정치이며
+# 결정론적 단일 상수로 운영(매 sync마다 동일 결과). 값이 작을수록 추정 user 수가 많다.
+REQUESTS_PER_USER = 55
+
 
 def fetch_requests(distribution_id: str) -> dict:
     end = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
@@ -68,14 +74,13 @@ def main() -> None:
             "configurator_users",
         ])
         for d in all_dates:
-            w.writerow([
-                d,
-                explorer.get(d, 0),
-                configurator.get(d, 0),
-                0,
-                0,
-            ])
-    print(f"Wrote {len(all_dates)} rows → {OUTPUT_PATH}")
+            req_e = explorer.get(d, 0)
+            req_c = configurator.get(d, 0)
+            usr_e = max(1, round(req_e / REQUESTS_PER_USER)) if req_e > 0 else 0
+            usr_c = max(1, round(req_c / REQUESTS_PER_USER)) if req_c > 0 else 0
+            w.writerow([d, req_e, req_c, usr_e, usr_c])
+    print(f"Wrote {len(all_dates)} rows → {OUTPUT_PATH} "
+          f"(users estimated at requests/{REQUESTS_PER_USER})")
 
 
 if __name__ == "__main__":
