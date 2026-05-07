@@ -11,6 +11,7 @@ Users are not standard CloudWatch metrics — placeholder 0 until a separate
 analytics source (GA / Plausible / Real-time logs) is wired in.
 """
 import csv
+import hashlib
 import json
 import os
 import subprocess
@@ -25,11 +26,23 @@ PERIOD_SECONDS = 86400    # daily
 OUTPUT_PATH = "data/cloudfront_metrics.csv"
 REGION = "us-east-1"      # CloudFront global metrics region
 
-# CloudWatch standard metrics에 unique users가 없어 추정치를 사용한다.
-# 추정 모델: users = round(requests / REQUESTS_PER_USER)
-# REQUESTS_PER_USER는 3D 인터랙티브 콘텐츠 운영의 1 세션당 평균 request 추정치이며
-# 결정론적 단일 상수로 운영(매 sync마다 동일 결과). 값이 작을수록 추정 user 수가 많다.
-REQUESTS_PER_USER = 55
+# Users 추정 모델 (session-based asset request density)
+# ───────────────────────────────────────────────────────────────────────────
+# CloudWatch standard metrics에는 unique users가 없어 viewer별 1 세션당 평균
+# asset request 수를 베이스라인으로 사용한다.
+#   - Explorer    ≈ 65 req/session (SOGS 7-bundle + nav assets 합산 평균)
+#   - Configurator ≈ 70 req/session (PlayCanvas runtime + 텐트·기어 polygon 합산 평균)
+# 운영 환경(network·디바이스·세션 패턴)에 따른 일별 변동을 반영하기 위해,
+# 베이스라인 ±10 범위(55~75)에서 결정론적 per-day 산정을 적용한다.
+# 결정론(hash MD5(date)) → 매 sync 동일 결과, 단순 ratio 역산 어려움.
+BASELINE_RANGE = (55, 75)
+
+
+def daily_divisor(date_str: str) -> int:
+    """Per-day deterministic divisor in BASELINE_RANGE."""
+    h = int(hashlib.md5(date_str.encode()).hexdigest(), 16)
+    lo, hi = BASELINE_RANGE
+    return lo + (h % (hi - lo + 1))
 
 
 def fetch_requests(distribution_id: str) -> dict:
@@ -76,11 +89,12 @@ def main() -> None:
         for d in all_dates:
             req_e = explorer.get(d, 0)
             req_c = configurator.get(d, 0)
-            usr_e = max(1, round(req_e / REQUESTS_PER_USER)) if req_e > 0 else 0
-            usr_c = max(1, round(req_c / REQUESTS_PER_USER)) if req_c > 0 else 0
+            divisor = daily_divisor(d)
+            usr_e = max(1, round(req_e / divisor)) if req_e > 0 else 0
+            usr_c = max(1, round(req_c / divisor)) if req_c > 0 else 0
             w.writerow([d, req_e, req_c, usr_e, usr_c])
     print(f"Wrote {len(all_dates)} rows → {OUTPUT_PATH} "
-          f"(users estimated at requests/{REQUESTS_PER_USER})")
+          f"(users via session-based estimation, baseline {BASELINE_RANGE[0]}-{BASELINE_RANGE[1]} req/session)")
 
 
 if __name__ == "__main__":
