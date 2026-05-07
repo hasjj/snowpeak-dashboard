@@ -155,8 +155,9 @@
 </div>
 
 <script>
-const SHEET_ID = '12qRY1IVJw5pdyoTjQuGxQpo-3cJfZNvTL43-NyXAdlw';
-const CSV_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+// Data source: CloudFront CloudWatch Requests metric, daily-synced via GitHub Actions
+// (see .github/workflows/sync-metrics.yml + sync_metrics.py).
+const CSV_URL  = './data/cloudfront_metrics.csv';
 const AUTH_KEY = 'snowpeak_auth_v1';
 const VALID_ID = 'snowpeak';
 const VALID_PW = 'swarobo!';
@@ -195,12 +196,25 @@ function showDashboard() {
 
 // ----- CSV parse -----
 function parseCSV(text) {
+  // Robust CSV: handles plain rows (Python csv default) AND quoted cells (gviz legacy).
   const lines = text.split(/\r?\n/).filter(l => l.length);
   const rows = [];
-  for (let i = 0; i < lines.length; i++) {
-    // Naive CSV (assumes no embedded commas in quoted strings beyond simple quoting)
-    const cells = lines[i].match(/"([^"]*)"/g) || [];
-    rows.push(cells.map(c => c.slice(1, -1)));
+  for (const line of lines) {
+    const cells = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') {
+        if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+        else inQ = !inQ;
+      } else if (c === ',' && !inQ) {
+        cells.push(cur); cur = '';
+      } else {
+        cur += c;
+      }
+    }
+    cells.push(cur);
+    rows.push(cells);
   }
   return rows;
 }
@@ -208,8 +222,8 @@ function parseCSV(text) {
 // ----- Data load + render -----
 async function loadData() {
   try {
-    const res = await fetch(CSV_URL + '&_=' + Date.now()); // bust cache
-    if (!res.ok) throw new Error('Sheet fetch failed: ' + res.status);
+    const res = await fetch(CSV_URL + '?_=' + Date.now()); // bust cache
+    if (!res.ok) throw new Error('Metrics CSV fetch failed: ' + res.status);
     const text = await res.text();
     const rows = parseCSV(text);
     if (rows.length < 2) throw new Error('Empty data');
@@ -242,7 +256,7 @@ async function loadData() {
     document.getElementById('loading').style.display = 'none';
     const err = document.getElementById('error-msg');
     err.style.display = 'block';
-    err.textContent = '데이터 로드 실패: ' + e.message + ' — 시트 공유 권한(anyone with link viewer) 확인 필요';
+    err.textContent = '데이터 로드 실패: ' + e.message + ' — sync workflow 실행 상태 또는 data/cloudfront_metrics.csv 존재 여부 확인';
     console.error(e);
   }
 }

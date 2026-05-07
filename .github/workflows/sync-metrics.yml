@@ -1,0 +1,39 @@
+name: Sync CloudFront Metrics
+
+on:
+  schedule:
+    # 09:00 KST daily = 00:00 UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Fetch CloudFront metrics → CSV
+        run: python3 sync_metrics.py
+
+      - name: Commit if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/cloudfront_metrics.csv
+          if git diff --staged --quiet; then
+            echo "No metric changes — skipping commit."
+          else
+            git commit -m "chore(metrics): daily CloudFront sync ($(date -u +%Y-%m-%d))"
+            git push
+          fi
