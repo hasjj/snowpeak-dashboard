@@ -1,5 +1,4 @@
 date,explorer_requests,configurator_requests,explorer_users,configurator_users
-2026-03-24,2655,1805,40,27
 2026-03-25,2664,732,36,10
 2026-03-26,2545,1445,40,23
 2026-03-27,2106,0,29,0
@@ -119,3 +118,4 @@ date,explorer_requests,configurator_requests,explorer_users,configurator_users
 2026-07-19,961,267,17,5
 2026-07-20,1705,184,30,3
 2026-07-21,1240,189,17,3
+2026-07-22,1238,725,18,11
